@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ragbolt"
-version = "0.1.0"
+version = "0.2.0"
 description = "Failure-aware RAG repair layer for Python."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,7 +28,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-full = ["faiss-cpu", "sentence-transformers"]
+full = [
+  "faiss-cpu>=1.7.4",
+  "sentence-transformers>=2.7.0",
+]
 
 [project.scripts]
 ragbolt = "ragbolt.cli.main:app"

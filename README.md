@@ -2,7 +2,7 @@
 Failure-aware RAG repair layer for Python.
 
 ## What it does
-ragbolt runs a bounded failure-handling loop around retrieval, generation, and grounding checks. It classifies retrieval low-confidence, malformed generation output, and grounding failures. Applies at most one repair per failure class per run (max 2 total). RETRIEVAL_LOW_CONFIDENCE and GROUNDING_FAILED are repaired; GENERATION_MALFORMED fails fast in v0.1.0. Grounding decisions are checked with EGA (Evidence-Gated Generation) using a verifier interface and a lexical stub implementation. Each run emits an auditable `rag_trace.json` event stream with failure classes, attempt counts, and outcome.
+ragbolt runs a bounded failure-handling loop around retrieval, generation, and grounding checks. It classifies retrieval low-confidence, malformed generation output, and grounding failures. Applies at most one repair per failure class per run (max 2 total). RETRIEVAL_LOW_CONFIDENCE and GROUNDING_FAILED are repaired; GENERATION_MALFORMED fails fast in v0.2.0. Grounding decisions are checked with EGA (Evidence-Gated Generation) using a verifier interface and both stub and production verifier implementations. Each run emits an auditable `rag_trace.json` event stream with failure classes, attempt counts, and outcome.
 
 ## What it is not
 - Not a RAG framework
@@ -12,9 +12,9 @@ ragbolt runs a bounded failure-handling loop around retrieval, generation, and g
 
 ## Install
 ```bash
-pip install ragbolt          # core (BM25, stub EGA, CLI)
+pip install ragbolt              # BM25, stub EGA, CLI
+pip install ragbolt[full]        # + FAISS hybrid, NLI verifier
 ```
-Optional extras (FAISS, sentence-transformers) planned for future releases.
 
 ## Quickstart
 1. Minimal corpus JSON:
@@ -45,6 +45,16 @@ Optional extras (FAISS, sentence-transformers) planned for future releases.
 ragbolt run corpus.json "your query" --output trace.json
 ```
 
+Phase 3 options:
+
+```bash
+# Use Anthropic provider with production EGA verifier
+ragbolt run corpus.json "query" --provider anthropic --verifier production
+
+# Use hybrid retrieval (requires ragbolt[full])
+ragbolt run corpus.json "query" --retriever hybrid
+```
+
 Expected output:
 
 ```text
@@ -72,6 +82,19 @@ unsupported_ratio_threshold: 0.25
 top_k: 5
 top_k_max: 10
 context_reduction_mode: chunk
+
+# Generation providers
+anthropic_model: claude-sonnet-4-20250514
+openai_model: gpt-4o-mini
+max_tokens: 1024
+
+# Hybrid retrieval
+embedding_model: sentence-transformers/all-MiniLM-L6-v2
+rrf_k: 60
+
+# Production EGA verifier
+nli_model: cross-encoder/nli-deberta-v3-small
+nli_batch_size: 8
 ```
 Copy to `config.yaml` and pass via `--config`.
 
@@ -79,7 +102,7 @@ Copy to `config.yaml` and pass via `--config`.
 | Class | Trigger |
 | --- | --- |
 | RETRIEVAL_LOW_CONFIDENCE | BM25 top score < bm25_min_score |
-| GENERATION_MALFORMED | Empty or error from provider — fails fast, no repair in v0.1.0 |
+| GENERATION_MALFORMED | Empty or error from provider — fails fast, no repair in v0.2.0 |
 | GROUNDING_FAILED | EGA unsupported_ratio >= threshold |
 
 | Outcome | Meaning |

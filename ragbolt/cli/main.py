@@ -31,7 +31,9 @@ def run(
     query: str = typer.Argument(..., help="Query string"),
     config: Path = typer.Option(Path("config.yaml"), help="YAML config path"),
     output: Path = typer.Option(Path("rag_trace.json"), help="Trace output path"),
-    provider: str = typer.Option("stub", help="Generation provider: stub"),
+    provider: str = typer.Option("stub", help="Generation provider: stub, anthropic, or openai"),
+    retriever: str = typer.Option("bm25", help="bm25 or hybrid"),
+    verifier: str = typer.Option("stub", help="stub or production"),
 ):
     """Run ragbolt on a single query against a corpus."""
     config_dict = _default_config()
@@ -52,18 +54,53 @@ def run(
     except (ValueError, FileNotFoundError) as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
-    if provider == "stub":
-        generation_provider = StubGenerationProvider()
-    else:
-        typer.echo("Error: unknown provider", err=True)
+    try:
+        if provider == "stub":
+            generation_provider = StubGenerationProvider()
+        elif provider == "anthropic":
+            from ragbolt.core.providers import AnthropicGenerationProvider
+
+            generation_provider = AnthropicGenerationProvider(config_dict)
+        elif provider == "openai":
+            from ragbolt.core.providers import OpenAIGenerationProvider
+
+            generation_provider = OpenAIGenerationProvider(config_dict)
+        else:
+            typer.echo("Error: unknown provider", err=True)
+            raise typer.Exit(1)
+    except typer.Exit:
+        raise
+    except Exception as e:
+        typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
     try:
-        verifier = StubEGAVerifier(config_dict)
+        retriever_obj = None
+        if retriever == "hybrid":
+            from ragbolt.core.hybrid import HybridRunner
+
+            retriever_obj = HybridRunner(corpus_obj, config_dict)
+        elif retriever == "bm25":
+            retriever_obj = None
+        else:
+            typer.echo("Error: unknown retriever", err=True)
+            raise typer.Exit(1)
+
+        if verifier == "production":
+            from ragbolt.verify.production import ProductionEGAVerifier
+
+            ega = ProductionEGAVerifier(config_dict)
+        elif verifier == "stub":
+            ega = StubEGAVerifier(config_dict)
+        else:
+            typer.echo("Error: unknown verifier", err=True)
+            raise typer.Exit(1)
+
         orchestrator = RepairOrchestrator(
             corpus_obj,
             config_dict,
             generation_provider,
-            verifier,
+            ega,
+            retriever=retriever_obj,
         )
         result = orchestrator.run(query)
         emitter = TraceEmitter(output)

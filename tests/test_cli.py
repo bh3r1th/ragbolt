@@ -36,3 +36,33 @@ def test_cli_run_missing_corpus(tmp_path: Path) -> None:
 def test_cli_eval_missing_report(tmp_path: Path) -> None:
     result = runner.invoke(app, ["eval", str(tmp_path / "nope.json")])
     assert result.exit_code == 1
+
+
+def test_cli_unknown_provider(tmp_path: Path) -> None:
+    corpus_path = tmp_path / "corpus.json"
+    corpus_path.write_text(
+        json.dumps(
+            [{"chunk_id": "c1", "text": "retrieval ranking bm25", "source": "a.txt"}]
+        ),
+        encoding="utf-8",
+    )
+    result = runner.invoke(
+        app,
+        ["run", str(corpus_path), "query", "--provider", "bad"],
+    )
+    assert result.exit_code == 1
+
+
+def test_cli_unknown_retriever(tmp_path: Path) -> None:
+    corpus_path = tmp_path / "corpus.json"
+    corpus_path.write_text(
+        json.dumps(
+            [{"chunk_id": "c1", "text": "retrieval ranking bm25", "source": "a.txt"}]
+        ),
+        encoding="utf-8",
+    )
+    result = runner.invoke(
+        app,
+        ["run", str(corpus_path), "query", "--retriever", "bad"],
+    )
+    assert result.exit_code == 1

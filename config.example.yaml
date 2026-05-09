@@ -4,3 +4,16 @@ unsupported_ratio_threshold: 0.25
 top_k: 5
 top_k_max: 10
 context_reduction_mode: chunk
+
+# Generation providers
+anthropic_model: claude-sonnet-4-20250514
+openai_model: gpt-4o-mini
+max_tokens: 1024
+
+# Hybrid retrieval
+embedding_model: sentence-transformers/all-MiniLM-L6-v2
+rrf_k: 60
+
+# Production EGA verifier
+nli_model: cross-encoder/nli-deberta-v3-small
+nli_batch_size: 8

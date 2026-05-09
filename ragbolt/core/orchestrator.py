@@ -26,11 +26,18 @@ class RepairOrchestrator:
         config: dict,
         generator: GenerationProvider,
         verifier: EGAVerifier,
+        retriever=None,
     ):
         self._corpus = corpus
         self._config = dict(config)
         self._generator = generator
         self._verifier = verifier
+        if retriever is None:
+            self._retriever = BM25Runner(corpus, config)
+            self._retriever_type = BM25Runner
+        else:
+            self._retriever = retriever
+            self._retriever_type = retriever.__class__
 
     def _append_failure(self, failures: list, fc: FailureClass) -> None:
         if fc not in failures:
@@ -45,7 +52,8 @@ class RepairOrchestrator:
 
         retrieval_config = dict(self._config)
         retrieval_config["top_k"] = top_k
-        chunks, top_score = BM25Runner(self._corpus, retrieval_config).retrieve(query)
+        retriever = self._retriever
+        chunks, top_score = retriever.retrieve(query)
         raw_top_score = top_score
         chunk_ids = [c.chunk_id for c in chunks]
 
@@ -54,7 +62,8 @@ class RepairOrchestrator:
             expanded_config = dict(self._config)
             expanded_config["top_k"] = min(int(self._config["top_k"]) + 5, top_k_max)
             repair_attempts += 1
-            chunks, top_score = BM25Runner(self._corpus, expanded_config).retrieve(query)
+            retriever = self._retriever_type(self._corpus, expanded_config)
+            chunks, top_score = retriever.retrieve(query)
             raw_top_score = top_score
             chunk_ids = [c.chunk_id for c in chunks]
             if top_score < bm25_min_score:
