@@ -1,1 +1,6 @@
-__version__ = "0.4.0"
+__version__ = "0.5.0"
+
+try:
+    from ragbolt.adapters import BaseRagboltAdapter, RagboltResponse
+except ImportError:
+    pass

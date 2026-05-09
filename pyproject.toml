@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ragbolt"
-version = "0.4.0"
+version = "0.5.0"
 description = "Failure-aware RAG repair layer for Python."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -40,7 +40,9 @@ otel = [
   "opentelemetry-sdk>=1.24.0",
   "opentelemetry-exporter-otlp-proto-http>=1.24.0",
 ]
-all = ["ragbolt[full,serve,otel]"]
+langchain = ["langchain-core>=0.1.0"]
+llamaindex = ["llama-index-core>=0.10.0"]
+all = ["ragbolt[full,serve,otel,langchain,llamaindex]"]
 
 [project.scripts]
 ragbolt = "ragbolt.cli.main:app"

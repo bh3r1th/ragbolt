@@ -22,6 +22,7 @@ nav:
   - Configuration: configuration.md
   - Trace Format: trace.md
   - Architecture: architecture.md
+  - Framework Adapters: adapters.md
 
 markdown_extensions:
   - pymdownx.highlight
