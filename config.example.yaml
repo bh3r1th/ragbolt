@@ -1,0 +1,6 @@
+bm25_min_score: 0.30
+overlap_min_jaccard: 0.15
+unsupported_ratio_threshold: 0.25
+top_k: 5
+top_k_max: 10
+context_reduction_mode: chunk

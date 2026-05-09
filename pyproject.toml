@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ragbolt"
+version = "0.1.0"
+description = "Failure-aware RAG repair layer for Python."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+keywords = ["rag", "retrieval", "repair", "grounding", "llm"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "rank_bm25>=0.2.2",
+  "pydantic>=2.0",
+  "typer>=0.9.0",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+full = ["faiss-cpu", "sentence-transformers"]
+
+[project.scripts]
+ragbolt = "ragbolt.cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/ragbolt/ragbolt"
+Repository = "https://github.com/ragbolt/ragbolt"

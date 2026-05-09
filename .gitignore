@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+MANIFEST
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# ragbolt runtime outputs
+rag_trace.json
+eval_report.json
+smoke_corpus.json
+smoke_trace.json
+*.trace.json
+*.report.json
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDE
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Distribution
+*.whl
+*.tar.gz
+*.zip
+# MANIFEST.in (only if auto-generated)
+# MANIFEST.in
