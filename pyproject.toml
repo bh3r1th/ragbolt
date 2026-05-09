@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ragbolt"
-version = "0.2.0"
+version = "0.3.0"
 description = "Failure-aware RAG repair layer for Python."
 readme = "README.md"
 requires-python = ">=3.10"

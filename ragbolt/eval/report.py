@@ -36,7 +36,26 @@ def write_report(report: EvalReport, path: Path) -> None:
 
 
 def load_and_build_report(trace_path: Path, report_path: Path) -> EvalReport:
+    if not trace_path.exists():
+        raise FileNotFoundError(trace_path)
     events = json.loads(trace_path.read_text(encoding="utf-8"))
+    if not events:
+        raise ValueError("Empty trace file")
     report = build_report(events)
     write_report(report, report_path)
     return report
+
+
+def summary_lines(report: EvalReport) -> list[str]:
+    return [
+        "ragbolt eval report",
+        "─────────────────────────────",
+        f"Total cases : {report.total_cases}",
+        f"Generated at: {report.generated_at}",
+        "",
+        "Outcome distribution:",
+        f"  ACCEPTED          : {report.outcome_distribution.get(DecisionOutcome.ACCEPTED.value, 0)}",
+        f"  REPAIRED_ACCEPTED : {report.outcome_distribution.get(DecisionOutcome.REPAIRED_ACCEPTED.value, 0)}",
+        f"  ABSTAINED         : {report.outcome_distribution.get(DecisionOutcome.ABSTAINED.value, 0)}",
+        f"  FAILED            : {report.outcome_distribution.get(DecisionOutcome.FAILED.value, 0)}",
+    ]

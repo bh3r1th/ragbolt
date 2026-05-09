@@ -46,6 +46,9 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
+# MkDocs build output
+site/
+
 # Distribution
 *.whl
 *.tar.gz

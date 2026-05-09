@@ -1,0 +1,30 @@
+site_name: ragbolt
+site_description: Failure-aware RAG repair layer for Python
+site_url: https://ragbolt.github.io/ragbolt
+repo_url: https://github.com/ragbolt/ragbolt
+repo_name: ragbolt/ragbolt
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - CLI Reference: cli.md
+  - Configuration: configuration.md
+  - Trace Format: trace.md
+  - Architecture: architecture.md
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - tables

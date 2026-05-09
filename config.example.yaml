@@ -9,6 +9,7 @@ context_reduction_mode: chunk
 anthropic_model: claude-sonnet-4-20250514
 openai_model: gpt-4o-mini
 max_tokens: 1024
+stream_generation: false
 
 # Hybrid retrieval
 embedding_model: sentence-transformers/all-MiniLM-L6-v2

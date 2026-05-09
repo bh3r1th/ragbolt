@@ -1,6 +1,4 @@
 import typer
-import json
-from collections import Counter
 from pathlib import Path
 
 import yaml
@@ -125,41 +123,53 @@ def run(
 
 @app.command("eval")
 def eval(
-    report: Path = typer.Argument(..., help="Path to eval_report.json"),
+    trace: Path = typer.Argument(..., help="Path to rag_trace.json"),
+    report: Path = typer.Option(
+        Path("eval_report.json"),
+        help="Path to write eval_report.json",
+    ),
 ):
-    """Print eval report summary to stdout."""
-    if not report.exists():
-        typer.echo(f"Error: {report} not found", err=True)
-        raise typer.Exit(1)
+    """Generate and print eval report from a trace file."""
     try:
-        payload = json.loads(report.read_text(encoding="utf-8"))
+        from ragbolt.eval.report import load_and_build_report, summary_lines
+
+        r = load_and_build_report(trace, report)
+        for line in summary_lines(r):
+            typer.echo(line)
+        typer.echo(f"\nReport written to: {report}")
+    except FileNotFoundError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(1)
     except Exception as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
 
-    try:
-        if isinstance(payload, dict) and "per_case" in payload and isinstance(payload["per_case"], list):
-            per_case = payload["per_case"]
-        elif isinstance(payload, list):
-            per_case = payload
-        else:
-            typer.echo("Error: Invalid report JSON format", err=True)
-            raise typer.Exit(1)
 
-        typer.echo(f"per_case: {len(per_case)}")
-        outcomes = Counter()
-        for item in per_case:
-            if isinstance(item, dict):
-                outcome = item.get("outcome")
-                if outcome is not None:
-                    outcomes[str(outcome)] += 1
-        for key, count in outcomes.items():
-            typer.echo(f"{key}: {count}")
-    except typer.Exit:
-        raise
-    except Exception as e:
+@app.command("explain")
+def explain(
+    trace: Path = typer.Argument(..., help="Path to rag_trace.json"),
+    run_id: str = typer.Option(None, help="Explain a specific run_id only"),
+):
+    """Print human-readable explanation of a trace file."""
+    try:
+        from ragbolt.trace.explain import load_trace, explain_event, explain_trace
+
+        events = load_trace(trace)
+        if run_id:
+            matched = [e for e in events if e["run_id"] == run_id]
+            if not matched:
+                typer.echo(f"Error: run_id {run_id} not found in trace", err=True)
+                raise typer.Exit(1)
+            events = matched
+        for line in explain_trace(events):
+            typer.echo(line)
+    except (FileNotFoundError, ValueError) as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
+
 
 if __name__ == "__main__":
     app()
