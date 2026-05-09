@@ -107,6 +107,140 @@ Repairs  : 0 attempt(s)
 Outcome  : ✓ Response accepted — fully grounded, no repairs needed.
 ```
 
+### `ingest`
+Ingest text files into a ragbolt corpus JSON.
+
+Arguments:
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `source` | `PATH` | Yes | File or directory to ingest. Supports `.txt`, `.md`, `.json`. |
+
+Options:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--output` | `PATH` | `corpus.json` | Output corpus JSON path. |
+| `--chunk-size` | `INT` | `512` | Max words per chunk. |
+| `--recursive`, `-r` | `FLAG` | off | Recurse into subdirectories. |
+
+Example:
+
+```bash
+ragbolt ingest docs/ --output corpus.json --recursive
+```
+
+### `batch`
+Run ragbolt on multiple queries from a file.
+
+Arguments:
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `corpus` | `PATH` | Yes | Path to corpus JSON. |
+| `queries` | `PATH` | Yes | Path to `queries.txt` (one per line) or `queries.jsonl` (`{"query": "..."}` per line). |
+
+Options:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--config` | `PATH` | `config.yaml` | YAML config path. |
+| `--output` | `PATH` | `rag_trace.json` | Trace output path (appended). |
+| `--provider` | `TEXT` | `stub` | Generation provider. |
+| `--retriever` | `TEXT` | `bm25` | Retriever. |
+| `--verifier` | `TEXT` | `stub` | Verifier. |
+
+Example:
+
+```bash
+ragbolt batch corpus.json queries.txt --output rag_trace.json
+```
+
+Example output:
+
+```text
+Batch complete: 25 queries
+  ACCEPTED            : 18
+  REPAIRED_ACCEPTED   : 4
+  ABSTAINED           : 2
+  FAILED              : 1
+Trace written to: rag_trace.json
+```
+
+### `serve`
+Start ragbolt as a REST API server. Requires `pip install ragbolt[serve]`.
+
+Arguments:
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `corpus` | `PATH` | Yes | Path to corpus JSON. |
+
+Options:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--config` | `PATH` | `config.yaml` | YAML config path. |
+| `--provider` | `TEXT` | `stub` | Generation provider. |
+| `--retriever` | `TEXT` | `bm25` | Retriever. |
+| `--verifier` | `TEXT` | `stub` | Verifier. |
+| `--host` | `TEXT` | `127.0.0.1` | Bind host. |
+| `--port` | `INT` | `8000` | Bind port. |
+
+Endpoints: `POST /query`, `GET /health`, `GET /trace`.
+
+Example:
+
+```bash
+ragbolt serve corpus.json --host 0.0.0.0 --port 8000
+```
+
+### `calibrate`
+Recommend threshold adjustments based on trace history.
+
+Arguments:
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `trace` | `PATH` | Yes | Path to `rag_trace.json` (≥10 events). |
+
+Options:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--config` | `PATH` | `config.yaml` | Current config path. |
+| `--target-abstain-rate` | `FLOAT` | `0.05` | Target abstain rate. |
+| `--target-fail-rate` | `FLOAT` | `0.10` | Target fail rate. |
+| `--apply` | `FLAG` | off | Write recommended values to `config.yaml`. |
+
+Example:
+
+```bash
+ragbolt calibrate rag_trace.json --apply
+```
+
+### `export`
+Export trace to OpenTelemetry collector. Requires `pip install ragbolt[otel]`.
+
+Arguments:
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `trace` | `PATH` | Yes | Path to `rag_trace.json`. |
+
+Options:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--endpoint` | `TEXT` | `http://localhost:4318/v1/traces` | OTLP HTTP endpoint. |
+| `--service-name` | `TEXT` | `ragbolt` | OTEL service name. |
+
+Example:
+
+```bash
+ragbolt export rag_trace.json --endpoint http://otel-collector:4318/v1/traces
+```
+
 ### `ragbolt --help`
 ```text
                                                                                
