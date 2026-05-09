@@ -78,6 +78,46 @@ Outcome distribution:
 Report written to: eval_report.json
 ```
 
+## Ingesting documents
+ragbolt can build a corpus directly from `.txt`, `.md`, or `.json` files. Pass a single file or a directory:
+
+```bash
+ragbolt ingest docs/ --output corpus.json --recursive
+```
+
+Behavior:
+
+- `.txt` / `.md`: paragraphs split on double newline. Long paragraphs split further on sentences. Each chunk gets `chunk_id = "{file_stem}_{NNNN}"` and `source = "{file.name}"`.
+- `.json`: must be an array of objects with at least `text` and `chunk_id`. Validated via the `Chunk` model.
+- Directories: all supported files merged, duplicates auto-disambiguated, `corpus_id = directory.stem`.
+
+## Batch queries
+Run many queries against the same corpus in a single CLI call. Two formats supported:
+
+`queries.txt` — one per line, blanks and `#`-comment lines skipped:
+
+```text
+Where is the Eiffel Tower?
+What is the capital of France?
+# this line is ignored
+Which river runs through Paris?
+```
+
+`queries.jsonl` — one JSON object per line with a `query` key:
+
+```jsonl
+{"query": "Where is the Eiffel Tower?"}
+{"query": "What is the capital of France?"}
+```
+
+Then run:
+
+```bash
+ragbolt batch corpus.json queries.txt --output rag_trace.json
+```
+
+Each query becomes one event in the trace file (appended, not overwritten). `run_batch` never raises on a single bad query — failed queries are recorded as `FAILED` and the loop continues.
+
 ## Configuration
 ```yaml
 bm25_min_score: 0.30

@@ -120,3 +120,46 @@ def test_cli_eval_generates_report(tmp_path: Path) -> None:
     assert report_path.exists()
     assert "ACCEPTED" in result.output
     assert "Total cases" in result.output
+
+
+def test_cli_ingest_file(tmp_path: Path) -> None:
+    txt_path = tmp_path / "doc.txt"
+    output_path = tmp_path / "corpus.json"
+    txt_path.write_text(
+        "First paragraph with enough content to qualify.\n\n"
+        "Second paragraph also has plenty of words inside.",
+        encoding="utf-8",
+    )
+    result = runner.invoke(
+        app,
+        ["ingest", str(txt_path), "--output", str(output_path)],
+    )
+    assert result.exit_code == 0
+    assert output_path.exists()
+    data = json.loads(output_path.read_text(encoding="utf-8"))
+    assert len(data) >= 1
+
+
+def test_cli_batch(tmp_path: Path) -> None:
+    corpus_path = tmp_path / "corpus.json"
+    queries_path = tmp_path / "queries.txt"
+    trace_path = tmp_path / "trace.json"
+    corpus_path.write_text(
+        json.dumps([
+            {"chunk_id": "c1", "text": "BM25 ranking retrieval function applies", "source": "a.txt"},
+            {"chunk_id": "c2", "text": "alpha beta gamma unrelated tokens", "source": "b.txt"},
+            {"chunk_id": "c3", "text": "another distinct topic words here", "source": "c.txt"},
+        ]),
+        encoding="utf-8",
+    )
+    queries_path.write_text(
+        "ranking function\nretrieval BM25\n",
+        encoding="utf-8",
+    )
+    result = runner.invoke(
+        app,
+        ["batch", str(corpus_path), str(queries_path), "--output", str(trace_path)],
+    )
+    assert result.exit_code == 0
+    assert "Batch complete" in result.output
+    assert trace_path.exists()
