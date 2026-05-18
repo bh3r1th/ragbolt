@@ -129,6 +129,25 @@ Copy to `config.yaml` and pass via `--config`.
 ]
 ```
 
+## Post-retrieval sanity checks\r\nragbolt 0.6.0 adds deterministic sanity checks on retrieved chunks before generation.\r\n\r\nfrom ragbolt.sanity import sanity_check, repair\r\n\r\nreport = sanity_check(chunks)          # pure, stateless\r\nresult = repair(chunks, report)        # safe bounded repairs only\r\n\r\nThree detectors ship in v1:\r\n\r\n| Detector | Severity | Default action |\r\n| --- | --- | --- |\r\n| unicode_normalization_corruption | low | auto-normalize to NFC |\r\n| ocr_hard_corruption | medium | annotate risk only |\r\n| semantic_orphan_reference | medium | annotate; expand if neighbors provided |\r\n\r\nChunks accept plain strings, dicts with a text field, or RagboltChunk models.\r\nNeighbor expansion requires explicit opt-in — ragbolt never fetches context silently.\r\n\r\n## Post-retrieval sanity checks
+ragbolt 0.6.0 adds deterministic sanity checks on retrieved chunks before generation.
+
+from ragbolt.sanity import sanity_check, repair
+
+report = sanity_check(chunks)          # pure, stateless
+result = repair(chunks, report)        # safe bounded repairs only
+
+Three detectors ship in v1:
+
+| Detector | Severity | Default action |
+| --- | --- | --- |
+| unicode_normalization_corruption | low | auto-normalize to NFC |
+| ocr_hard_corruption | medium | annotate risk only |
+| semantic_orphan_reference | medium | annotate; expand if neighbors provided |
+
+Chunks accept plain strings, dicts with a text field, or RagboltChunk models.
+Neighbor expansion requires explicit opt-in — ragbolt never fetches context silently.
+
 ## Project layout
 ```text
 ragbolt/
@@ -139,6 +158,16 @@ ragbolt/
     orchestrator.py
   eval/
     report.py
+  sanity/
+    __init__.py
+    check.py
+    repair.py
+    models.py
+    _adapter.py
+    detectors/
+      unicode_normalization.py
+      ocr_hard_corruption.py
+      semantic_orphan.py
   trace/
   verify/
     stub.py
